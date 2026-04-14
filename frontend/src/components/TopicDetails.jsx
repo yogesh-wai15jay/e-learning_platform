@@ -90,23 +90,18 @@ const TopicDetails = () => {
       toast('You have already completed this topic!', { icon: '🏆' });
       return;
     }
-
     const totalModules = topic.subtopics.length;
     let updatedCompleted = [...completedModules];
     const lastModuleIndex = totalModules - 1;
-
-    // Auto‑complete the last module if we are on it and it's not yet completed
     if (!updatedCompleted.includes(lastModuleIndex) && currentModuleIndex === lastModuleIndex) {
       updatedCompleted.push(lastModuleIndex);
       setCompletedModules(updatedCompleted);
       saveModuleProgress(updatedCompleted, currentModuleIndex);
     }
-
     if (updatedCompleted.length !== totalModules) {
       toast.error(`Please complete all modules first. (${updatedCompleted.length}/${totalModules} completed)`);
       return;
     }
-
     setShowQuiz(true);
   };
 
@@ -118,7 +113,7 @@ const TopicDetails = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
       </div>
     );
   }
@@ -131,7 +126,7 @@ const TopicDetails = () => {
         <div className="max-w-7xl mx-auto px-4 py-8">
           <button
             onClick={() => navigate('/dashboard')}
-            className="mb-6 flex items-center text-gray-600 hover:text-gray-800"
+            className="mb-6 flex items-center text-primary-600 hover:text-primary-800"
           >
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -159,7 +154,7 @@ const TopicDetails = () => {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <button
           onClick={() => navigate('/dashboard')}
-          className="mb-6 flex items-center text-gray-600 hover:text-gray-800"
+          className="mb-6 flex items-center text-primary-600 hover:text-primary-800"
         >
           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -171,9 +166,9 @@ const TopicDetails = () => {
           {/* Left Sidebar */}
           <div className="lg:w-80 flex-shrink-0">
             <div className="bg-white rounded-xl shadow-md overflow-hidden sticky top-8">
-              <div className="bg-blue-600 text-white px-6 py-4">
+              <div className="bg-primary-500 text-white px-6 py-4">
                 <h2 className="font-semibold text-lg">{topic.title}</h2>
-                <p className="text-sm text-blue-100 mt-1">Course Modules</p>
+                <p className="text-sm text-primary-100 mt-1">Course Modules</p>
               </div>
               <div className="divide-y divide-gray-100 max-h-[70vh] overflow-y-auto">
                 {subtopics.map((mod, idx) => {
@@ -184,7 +179,7 @@ const TopicDetails = () => {
                       key={mod.id}
                       onClick={() => setCurrentModuleIndex(idx)}
                       className={`px-6 py-4 cursor-pointer transition-colors ${
-                        isActive ? 'bg-blue-50 border-l-4 border-blue-600' : 'hover:bg-gray-50'
+                        isActive ? 'bg-primary-50 border-l-4 border-primary-500' : 'hover:bg-gray-50'
                       }`}
                     >
                       <div className="flex justify-between items-center">
@@ -211,18 +206,18 @@ const TopicDetails = () => {
                 {/* Final Assessment - always visible */}
                 <div
                   onClick={handleStartQuiz}
-                  className="px-6 py-4 cursor-pointer transition-colors hover:bg-green-50 border-t-2 border-green-200 bg-green-50/30"
+                  className="px-6 py-4 cursor-pointer transition-colors hover:bg-pink-50 border-t-2 border-pink-200 bg-pink-50/30"
                 >
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className="font-medium text-green-700">
+                      <p className="font-medium text-pink-600">
                         🎯 Final Assessment (Quiz)
                       </p>
                       <div className="flex items-center mt-1 text-sm text-gray-500">
                         <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
-                        10 questions · 20 sec each
+                        10 questions · 30 sec each
                       </div>
                     </div>
                     {topicCompleted && (
@@ -261,7 +256,7 @@ const TopicDetails = () => {
                 {!topicCompleted && !isLastModule && (
                   <button
                     onClick={goToNextModule}
-                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="px-6 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
                   >
                     Next →
                   </button>
@@ -298,8 +293,10 @@ const TopicDetails = () => {
       {showQuiz && (
         <QuizModal
           topicId={topicId}
+          topicTitle={topic.title}
           onClose={() => setShowQuiz(false)}
           onComplete={handleQuizComplete}
+          navigate={navigate}
         />
       )}
     </div>
@@ -307,7 +304,7 @@ const TopicDetails = () => {
 };
 
 
-const QuizModal = ({ topicId, onClose, onComplete }) => {
+const QuizModal = ({ topicId, topicTitle, onClose, onComplete, navigate }) => {
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState({});
@@ -386,17 +383,21 @@ const QuizModal = ({ topicId, onClose, onComplete }) => {
         formattedAnswers.push(answers[i] || []);
       }
       const response = await api.post(`/quiz/${topicId}/submit`, { answers: formattedAnswers });
-      setResult(response.data);
-      setQuizCompleted(true);
-      if (response.data.passed) {
-        toast.success('Congratulations! You passed the quiz!');
-        onComplete();
-      } else {
-        toast.error(response.data.message || 'You did not pass. Try again in 12 hours.');
+      const resultData = response.data;
+      
+      onClose(); // close the quiz modal
+      // Navigate to result page
+      navigate(`/topic/${topicId}/result`, { 
+        state: { 
+          result: resultData,
+          topicTitle: topicTitle
+        } 
+      });
+      if (resultData.passed) {
+        onComplete(); // refresh topic details
       }
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to submit quiz');
-    } finally {
       setSubmitting(false);
     }
   };

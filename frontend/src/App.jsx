@@ -8,6 +8,7 @@ import Signup from './components/Signup';
 import LandingPage from './components/LandingPage';
 import TopicDetails from './components/TopicDetails';
 import AdminDashboard from './components/AdminDashboard';
+import QuizResult from './components/QuizResult';
 
 function App() {
   return (
@@ -41,6 +42,14 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+  path="/topic/:topicId/result"
+  element={
+    <ProtectedRoute>
+      <QuizResult />
+    </ProtectedRoute>
+  }
+/>
           <Route path="/" element={<Navigate to="/dashboard" />} />
         </Routes>
       </AuthProvider>

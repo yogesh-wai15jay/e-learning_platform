@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../api';
 import toast from 'react-hot-toast';
+import Logo from './Logo';
 
 const LandingPage = () => {
   const { user, logout } = useAuth();
@@ -10,12 +11,9 @@ const LandingPage = () => {
   const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Redirect admin to admin dashboard
   useEffect(() => {
-    if (user?.role === 'admin') {
-      navigate('/admin');
-    }
-  }, [user, navigate]);
+    if (user?.role === 'admin') navigate('/admin');
+  }, [user]);
 
   useEffect(() => {
     fetchTopics();
@@ -53,34 +51,28 @@ const LandingPage = () => {
   };
 
   const handleTopicClick = (topic) => {
-    if (topic.contentAvailable) {
-      navigate(`/topic/${topic.id}`);
-    } else {
-      toast('Content coming soon!', { icon: '📚' });
-    }
+    if (topic.contentAvailable) navigate(`/topic/${topic.id}`);
+    else toast('Content coming soon!', { icon: '📚' });
   };
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-white shadow-sm border-b border-lightBlue-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">E-Learning Platform</h1>
-            <p className="text-sm text-gray-500">Secure AI Training</p>
-          </div>
+          <Logo className="h-10" />
           <div className="flex items-center gap-4">
             <span className="text-gray-700">Welcome, {user?.name}</span>
             <button
               onClick={logout}
-              className="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              className="px-4 py-2 text-pink-500 hover:bg-pink-50 rounded-lg transition-colors"
             >
               Logout
             </button>
@@ -90,7 +82,7 @@ const LandingPage = () => {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-800">Your Learning Path</h2>
+          <h2 className="text-3xl font-bold text-primary-600">Your Learning Path</h2>
           <p className="text-gray-500 mt-2">Track your progress and continue learning</p>
         </div>
 
@@ -101,7 +93,7 @@ const LandingPage = () => {
               <div
                 key={topic.id}
                 onClick={() => handleTopicClick(topic)}
-                className="card p-6 cursor-pointer transform transition hover:scale-105"
+                className="bg-white rounded-xl shadow-md hover:shadow-lg transition cursor-pointer p-6"
               >
                 <div className="flex justify-between items-start mb-4">
                   <h3 className="text-xl font-semibold text-gray-800">{topic.name}</h3>
@@ -126,7 +118,7 @@ const LandingPage = () => {
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
-                          className="bg-blue-600 h-2 rounded-full transition-all"
+                          className="bg-primary-500 h-2 rounded-full transition-all"
                           style={{ width: `${percentage}%` }}
                         ></div>
                       </div>
