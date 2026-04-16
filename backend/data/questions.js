@@ -10,7 +10,7 @@ const questions = [
       { letter: "D", text: "Loss of competitive advantage" },
       { letter: "E", text: "Prompt injection attack" }
     ],
-    correctAnswers: ["A", "B", "D"],
+    correctAnswers: ["Data may be used for model training", "Internal strategy exposure", "Loss of competitive advantage"],
     explanation: "Public AI tools often use data for training, exposing internal strategies and causing competitive disadvantage."
   },
   {
@@ -22,7 +22,7 @@ const questions = [
       { letter: "C", text: "Safe due to removal of names" },
       { letter: "D", text: "Equivalent to aggregation" }
     ],
-    correctAnswers: ["B"],
+    correctAnswers: ["Partial anonymization with residual risk"],
     explanation: "Transaction IDs and timestamps can still identify individuals, creating residual risk."
   },
   {
@@ -35,7 +35,7 @@ const questions = [
       { letter: "D", text: "Lack of auditability" },
       { letter: "E", text: "Network interception of encrypted data" }
     ],
-    correctAnswers: ["A", "C", "D"],
+    correctAnswers: ["Unauthorized access to prompts internally", "Accidental sharing of sensitive data", "Lack of auditability"],
     explanation: "Without DLP and access controls, internal unauthorized access, accidental sharing, and lack of audit trails remain risks."
   },
   {
@@ -47,7 +47,7 @@ const questions = [
       { letter: "C", text: "Incorrect deployment architecture" },
       { letter: "D", text: "Absence of encryption" }
     ],
-    correctAnswers: ["B"],
+    correctAnswers: ["Lack of anonymization before input"],
     explanation: "Even with private models, PII must be anonymized before input to prevent exposure."
   },
   {
@@ -60,7 +60,7 @@ const questions = [
       { letter: "D", text: "Logging AI usage for compliance" },
       { letter: "E", text: "Using placeholders instead of real data" }
     ],
-    correctAnswers: ["A", "C"],
+    correctAnswers: ["Assuming enterprise AI tools are completely safe without validation", "Trusting AI-generated outputs without verification"],
     explanation: "Zero-trust requires never assuming safety and always verifying outputs."
   },
   {
@@ -72,7 +72,7 @@ const questions = [
       { letter: "C", text: "Tier 1 (Public Data)" },
       { letter: "D", text: "Depends on tool used" }
     ],
-    correctAnswers: ["C"],
+    correctAnswers: ["Tier 1 (Public Data)"],
     explanation: "Aggregated metrics without raw data are considered public data when no specifics are included."
   },
   {
@@ -85,7 +85,7 @@ const questions = [
       { letter: "D", text: "Role-based access control" },
       { letter: "E", text: "Hypothetical prompt structuring" }
     ],
-    correctAnswers: ["A", "C", "D"],
+    correctAnswers: ["Data Loss Prevention (DLP)", "TLS encryption", "Role-based access control"],
     explanation: "DLP, TLS encryption, and RBAC are system-level controls that directly prevent data leakage."
   },
   {
@@ -97,7 +97,7 @@ const questions = [
       { letter: "C", text: "Model training on data" },
       { letter: "D", text: "Prompt injection" }
     ],
-    correctAnswers: ["B"],
+    correctAnswers: ["Internal accountability failure"],
     explanation: "Shared logins eliminate audit trails and accountability for actions taken with sensitive data."
   },
   {
@@ -110,7 +110,7 @@ const questions = [
       { letter: "D", text: "Allowing unrestricted tool usage for flexibility" },
       { letter: "E", text: "Implementing audit logs and monitoring" }
     ],
-    correctAnswers: ["A", "C", "E"],
+    correctAnswers: ["Using private AI for sensitive data", "Combining DLP with encryption and access controls", "Implementing audit logs and monitoring"],
     explanation: "Defense-in-depth uses multiple layers: private AI, combined controls, and audit/monitoring."
   },
   {
@@ -122,7 +122,7 @@ const questions = [
       { letter: "C", text: "Encryption standards" },
       { letter: "D", text: "Prompt engineering technique" }
     ],
-    correctAnswers: ["B"],
+    correctAnswers: ["Tool governance and policy compliance"],
     explanation: "Using personal accounts violates established tool governance policies."
   }
 ];

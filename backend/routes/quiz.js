@@ -1,27 +1,60 @@
 const express = require('express');
 const auth = require('../middleware/auth');
 const User = require('../models/User');
-const questionsData = require('../data/questions');
+const secureAiQuestions = require('../data/questions');
+const leavePolicyQuestions = require('../data/leavePolicyQuestions');
+const hardwarePolicyQuestions = require('../data/hardwarePolicyQuestions');
+const serverPolicyQuestions = require('../data/serverPolicyQuestions');
 const router = express.Router();
 
-// Helper: check if two dates are within 12 hours
-const isWithin12Hours = (date1, date2) => {
+// Helper: check if two dates are within 6 hours
+const isWithin6Hours = (date1, date2) => {
   const diffMs = Math.abs(date1 - date2);
   const hours = diffMs / (1000 * 60 * 60);
-  return hours < 12;
+  return hours < 6;
+};
+
+// Helper to get quiz data based on topicId
+const getQuizData = (topicId) => {
+  if (topicId === 'secure-ai') {
+    return {
+      questions: secureAiQuestions,
+      topicName: "Secure & Responsible AI Usage",
+      passingScore: 7
+    };
+  } else if (topicId === 'leave-policy') {
+    return {
+      questions: leavePolicyQuestions,
+      topicName: "Leave Policy",
+      passingScore: 7   // 7 out of 10
+    };
+  } else if (topicId === 'hardware-policy') {
+  return {
+    questions: hardwarePolicyQuestions,
+    topicName: "Hardware Policy",
+    passingScore: 7   // 7 out of 10
+  };
+} else if (topicId === 'server-policy') {
+  return {
+    questions: serverPolicyQuestions,
+    topicName: "Server Policy",
+    passingScore: 7   // 7 out of 10
+  };
+}
+  return null;
 };
 
 // Get quiz questions (no lock here, just return shuffled options)
 router.get('/:topicId', auth, async (req, res) => {
   try {
     const { topicId } = req.params;
-    if (topicId !== 'secure-ai') {
+    const quizData = getQuizData(topicId);
+    if (!quizData) {
       return res.status(404).json({ message: 'Quiz not available for this topic' });
     }
 
     const user = await User.findById(req.user.userId);
-    const topicName = "Secure & Responsible AI Usage";
-    const progress = user.topicsProgress.get(topicName) || { 
+    const progress = user.topicsProgress.get(quizData.topicName) || { 
       completed: false, 
       lastQuizAttemptDate: null, 
       passed: false 
@@ -31,9 +64,8 @@ router.get('/:topicId', auth, async (req, res) => {
       return res.status(400).json({ message: 'Topic already completed. Cannot retake quiz.' });
     }
 
-    // No lock on GET – we only lock on submission
-    // Shuffle options while keeping letters A, B, C, D, E fixed
-    const shuffledQuestions = questionsData.map(q => {
+    // Shuffle options while keeping letters A, B, C, ... fixed
+    const shuffledQuestions = quizData.questions.map(q => {
       const originalOptions = q.options.sort((a, b) => a.letter.localeCompare(b.letter));
       const texts = originalOptions.map(opt => opt.text);
       for (let i = texts.length - 1; i > 0; i--) {
@@ -60,19 +92,19 @@ router.get('/:topicId', auth, async (req, res) => {
   }
 });
 
-// Submit quiz answers – this is where the 12‑hour lock is applied (on fail)
+// Submit quiz answers – 6‑hour lock applies only on failure
 router.post('/:topicId/submit', auth, async (req, res) => {
   try {
     const { topicId } = req.params;
     const { answers } = req.body;
 
-    if (topicId !== 'secure-ai') {
+    const quizData = getQuizData(topicId);
+    if (!quizData) {
       return res.status(404).json({ message: 'Quiz not available for this topic' });
     }
 
     const user = await User.findById(req.user.userId);
-    const topicName = "Secure & Responsible AI Usage";
-    let progress = user.topicsProgress.get(topicName) || { 
+    let progress = user.topicsProgress.get(quizData.topicName) || { 
       completed: false, 
       lastQuizAttemptDate: null, 
       passed: false 
@@ -84,10 +116,10 @@ router.post('/:topicId/submit', auth, async (req, res) => {
 
     const now = new Date();
 
-    // If there is a previous failed attempt within 12 hours, block
-    if (progress.lastQuizAttemptDate && !progress.passed && isWithin12Hours(progress.lastQuizAttemptDate, now)) {
+    // Block if there was a failed attempt within 6 hours
+    if (progress.lastQuizAttemptDate && !progress.passed && isWithin6Hours(progress.lastQuizAttemptDate, now)) {
       return res.status(400).json({ 
-        message: 'You failed the quiz recently. Please wait 12 hours before trying again.' 
+        message: 'You failed the quiz recently. Please wait 6 hours before trying again.' 
       });
     }
 
@@ -95,8 +127,8 @@ router.post('/:topicId/submit', auth, async (req, res) => {
     let correctCount = 0;
     const results = [];
 
-    for (let i = 0; i < questionsData.length; i++) {
-      const question = questionsData[i];
+    for (let i = 0; i < quizData.questions.length; i++) {
+      const question = quizData.questions[i];
       const userAnswer = answers[i] || [];
 
       const isCorrect = userAnswer.length === question.correctAnswers.length &&
@@ -114,24 +146,35 @@ router.post('/:topicId/submit', auth, async (req, res) => {
       });
     }
 
-    const passed = correctCount >= 7;
+    const passed = correctCount >= quizData.passingScore;
 
     // Update progress
     progress = {
       completed: passed ? true : progress.completed,
-      lastQuizAttemptDate: passed ? null : now,   // only store attempt date if failed
+      lastQuizAttemptDate: passed ? null : now,   // store attempt date only if failed
       passed: passed
     };
 
-    user.topicsProgress.set(topicName, progress);
+    user.topicsProgress.set(quizData.topicName, progress);
+
+    // Record the attempt
+user.quizAttempts.push({
+  topicId: topicId,
+  topicName: quizData.topicName,
+  attemptDate: now,
+  score: correctCount,
+  totalQuestions: quizData.questions.length,
+  passed: passed
+});
+
     await user.save();
 
     res.json({
       correctCount,
-      totalQuestions: questionsData.length,
+      totalQuestions: quizData.questions.length,
       passed,
       results,
-      message: passed ? 'Congratulations! You passed the quiz.' : 'You did not pass. Please wait 12 hours before retrying.'
+      message: passed ? 'Congratulations! You passed the quiz.' : 'You did not pass. Please wait 6 hours before retrying.'
     });
   } catch (error) {
     console.error(error);

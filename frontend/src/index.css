@@ -21,3 +21,12 @@
     @apply bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-200;
   }
 }
+
+@layer utilities {
+  .scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}}

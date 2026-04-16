@@ -2,10 +2,13 @@
 export default {
   content: [
     "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
+    "./src/**/*.{js,ts,jsx,tsx}"
   ],
   theme: {
     extend: {
+      fontFamily: {
+        'hero': ['Poppins', 'Montserrat', 'sans-serif'],  // or your chosen font
+      },
       colors: {
         primary: {
           50: '#e6f0fb',

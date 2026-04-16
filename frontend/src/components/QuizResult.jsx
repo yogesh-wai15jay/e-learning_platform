@@ -26,7 +26,7 @@ const QuizResult = () => {
             <p className="text-gray-600">
               {passed 
                 ? `You have successfully completed "${topicTitle}".` 
-                : `You need at least 7 correct answers to pass. Try again in 12 hours.`}
+                : `You need at least 7 correct answers to pass. Try again in 6 hours.`}
             </p>
           </div>
 

@@ -2,32 +2,40 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
+const { sendWelcomeEmail, sendNewUserNotification } = require('../utils/emailService');
 const router = express.Router();
 
 // Register
 router.post('/register', async (req, res) => {
   try {
     const { email, password, name } = req.body;
-    
+
     let user = await User.findOne({ email });
     if (user) {
       return res.status(400).json({ message: 'User already exists' });
     }
-    
+
     user = new User({ email, password, name });
     await user.save();
-    
+
+    // Send welcome email to the new user (don't wait for response)
+    sendWelcomeEmail(name, email).catch(err => console.error('Welcome email failed:', err));
+
+    // Send notification to additional recipients
+    sendNewUserNotification(name, email, user.createdAt).catch(err => console.error('Notification email failed:', err));
+
     const token = jwt.sign(
       { userId: user._id, email: user.email },
       process.env.JWT_SECRET || 'your_jwt_secret_key',
       { expiresIn: '7d' }
     );
-    
-    res.status(201).json({ 
-      token, 
-      user: { id: user._id, email: user.email, name: user.name, role: user.role } 
+
+    res.status(201).json({
+      token,
+      user: { id: user._id, email: user.email, name: user.name, role: user.role }
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: 'Server error' });
   }
 });

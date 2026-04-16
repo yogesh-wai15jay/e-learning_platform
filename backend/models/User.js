@@ -7,27 +7,20 @@ const moduleProgressSchema = new mongoose.Schema({
   lastModuleIndex: { type: Number, default: 0 }
 });
 
+const quizAttemptSchema = new mongoose.Schema({
+  topicId: { type: String, required: true },
+  topicName: { type: String, required: true },
+  attemptDate: { type: Date, default: Date.now },
+  score: { type: Number, required: true },
+  totalQuestions: { type: Number, required: true },
+  passed: { type: Boolean, required: true }
+});
+
 const userSchema = new mongoose.Schema({
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    lowercase: true,
-    trim: true
-  },
-  password: {
-    type: String,
-    required: true
-  },
-  name: {
-    type: String,
-    required: true
-  },
-  role: {
-    type: String,
-    enum: ['user', 'admin'],
-    default: 'user'
-  },
+  email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+  password: { type: String, required: true },
+  name: { type: String, required: true },
+  role: { type: String, enum: ['user', 'admin'], default: 'user' },
   topicsProgress: {
     type: Map,
     of: new mongoose.Schema({
@@ -42,10 +35,8 @@ const userSchema = new mongoose.Schema({
     of: moduleProgressSchema,
     default: {}
   },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
+  quizAttempts: [quizAttemptSchema],   // <-- new field
+  createdAt: { type: Date, default: Date.now }
 });
 
 userSchema.pre('save', async function(next) {

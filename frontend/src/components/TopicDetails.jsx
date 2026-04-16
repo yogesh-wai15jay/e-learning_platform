@@ -13,6 +13,7 @@ const TopicDetails = () => {
   const [completedModules, setCompletedModules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isLoadingProgress, setIsLoadingProgress] = useState(true);
+  const [showInstructions, setShowInstructions] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
 
   const fetchTopicDetails = async () => {
@@ -102,6 +103,12 @@ const TopicDetails = () => {
       toast.error(`Please complete all modules first. (${updatedCompleted.length}/${totalModules} completed)`);
       return;
     }
+    // Show instructions instead of directly opening quiz
+    setShowInstructions(true);
+  };
+
+  const handleStartQuizFromInstructions = () => {
+    setShowInstructions(false);
     setShowQuiz(true);
   };
 
@@ -149,22 +156,31 @@ const TopicDetails = () => {
   const allModulesCompleted = completedModules.length === subtopics.length;
   const topicCompleted = topic.progress?.completed;
 
+  // Determine passing score based on topicId (hardcoded for now)
+  const getPassingScore = () => {
+    if (topicId === 'secure-ai') return 7;
+    return 7; // all topics have 10 questions, pass 7
+  };
+  const totalQuestions = topicId === 'secure-ai' ? 10 : 10; // all have 10 for now
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <button
-          onClick={() => navigate('/dashboard')}
-          className="mb-6 flex items-center text-primary-600 hover:text-primary-800"
-        >
-          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          Back to Dashboard
-        </button>
+      <div className="py-8">
+        <div className="pl-4 mb-6">
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="flex items-center text-primary-600 hover:text-primary-800"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to Dashboard
+          </button>
+        </div>
 
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Left Sidebar */}
-          <div className="lg:w-80 flex-shrink-0">
+          <div className="lg:w-72 flex-shrink-0">
             <div className="bg-white rounded-xl shadow-md overflow-hidden sticky top-8">
               <div className="bg-primary-500 text-white px-6 py-4">
                 <h2 className="font-semibold text-lg">{topic.title}</h2>
@@ -217,7 +233,7 @@ const TopicDetails = () => {
                         <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
-                        10 questions · 30 sec each
+                        {totalQuestions} questions · 30 sec each
                       </div>
                     </div>
                     {topicCompleted && (
@@ -232,7 +248,7 @@ const TopicDetails = () => {
           </div>
 
           {/* Right Side Content */}
-          <div className="flex-1">
+          <div className="flex-1 min-w-0 pr-4">
             <div className="bg-white rounded-xl shadow-md p-6 md:p-8">
               {currentModule ? (
                 <div dangerouslySetInnerHTML={{ __html: currentModule.content }} />
@@ -290,6 +306,18 @@ const TopicDetails = () => {
         </div>
       </div>
 
+      {/* Instructions Modal */}
+      {showInstructions && (
+        <InstructionsModal
+          topicTitle={topic.title}
+          totalQuestions={totalQuestions}
+          passingScore={getPassingScore()}
+          onStart={handleStartQuizFromInstructions}
+          onCancel={() => setShowInstructions(false)}
+        />
+      )}
+
+      {/* Quiz Modal */}
       {showQuiz && (
         <QuizModal
           topicId={topicId}
@@ -303,7 +331,35 @@ const TopicDetails = () => {
   );
 };
 
+// Instructions Modal Component
+const InstructionsModal = ({ topicTitle, totalQuestions, passingScore, onStart, onCancel }) => {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl max-w-lg w-full p-6">
+        <h2 className="text-2xl font-bold text-primary-600 mb-4">Quiz Instructions</h2>
+        <div className="space-y-3 text-gray-700">
+          <p><strong>Course:</strong> {topicTitle}</p>
+          <p><strong>Total Questions:</strong> {totalQuestions}</p>
+          <p><strong>Time per Question:</strong> 30 seconds</p>
+          <p><strong>Passing Score:</strong> {passingScore}/{totalQuestions} ({Math.round((passingScore/totalQuestions)*100)}%)</p>
+          <p><strong>Attempt Limit:</strong> If you fail, you must wait 6 hours before retrying.</p>
+          <p className="text-sm text-gray-500 mt-2">Once you start, the timer begins. Do not refresh the page during the quiz.</p>
+        </div>
+        <div className="flex justify-end gap-3 mt-6">
+          <button onClick={onCancel} className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">
+            Cancel
+          </button>
+          <button onClick={onStart} className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600">
+            Start Quiz
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
+
+// Quiz Modal Component (unchanged - keep as is)
 const QuizModal = ({ topicId, topicTitle, onClose, onComplete, navigate }) => {
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -349,22 +405,21 @@ const QuizModal = ({ topicId, topicTitle, onClose, onComplete, navigate }) => {
     }
   };
 
-  const handleAnswerChange = (optionLetter) => {
-    const currentQuestion = questions[currentIndex];
-    const currentAnswers = answers[currentIndex] || [];
-    
-    let newAnswers;
-    if (currentQuestion.correctAnswers.length > 1) {
-      if (currentAnswers.includes(optionLetter)) {
-        newAnswers = currentAnswers.filter(a => a !== optionLetter);
-      } else {
-        newAnswers = [...currentAnswers, optionLetter];
-      }
+  const handleAnswerChange = (optionText) => {
+  const currentQuestion = questions[currentIndex];
+  const currentAnswers = answers[currentIndex] || [];
+  let newAnswers;
+  if (currentQuestion.correctAnswers.length > 1) {
+    if (currentAnswers.includes(optionText)) {
+      newAnswers = currentAnswers.filter(t => t !== optionText);
     } else {
-      newAnswers = [optionLetter];
+      newAnswers = [...currentAnswers, optionText];
     }
-    setAnswers({ ...answers, [currentIndex]: newAnswers });
-  };
+  } else {
+    newAnswers = [optionText];
+  }
+  setAnswers({ ...answers, [currentIndex]: newAnswers });
+};
 
   const handleNext = () => {
     if (currentIndex < questions.length - 1) {
@@ -496,8 +551,8 @@ const QuizModal = ({ topicId, topicTitle, onClose, onComplete, navigate }) => {
                 <input
                   type={isMultiSelect ? 'checkbox' : 'radio'}
                   name="question"
-                  checked={(answers[currentIndex] || []).includes(option.letter)}
-                  onChange={() => handleAnswerChange(option.letter)}
+                  checked={(answers[currentIndex] || []).includes(option.text)}
+                  onChange={() => handleAnswerChange(option.text)}
                   className="mt-1 mr-3"
                 />
                 <span className="text-gray-700">
