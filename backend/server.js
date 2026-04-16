@@ -38,7 +38,10 @@ const createAdmin = async () => {
 createAdmin();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: ['https://e-learningplatformnew.vercel.app', 'http://localhost:3000'],
+  credentials: true
+}));
 app.use(express.json());
 
 // Routes
