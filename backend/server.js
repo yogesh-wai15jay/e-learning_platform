@@ -14,6 +14,26 @@ const app = express();
 // Connect to MongoDB
 connectDB();
 
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').filter(Boolean);
+if (process.env.NODE_ENV !== 'production') {
+    allowedOrigins.push('http://localhost:3000'); // For local dev
+}
+
+const corsOptions = {
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes('*')) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true, // Important if you use cookies or authentication headers
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
 // Create admin user if not exists
 const createAdmin = async () => {
   try {
@@ -38,10 +58,7 @@ const createAdmin = async () => {
 createAdmin();
 
 // Middleware
-app.use(cors({
-  origin: ['https://e-learningplatformnew.vercel.app', 'http://localhost:3000'],
-  credentials: true
-}));
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Routes
